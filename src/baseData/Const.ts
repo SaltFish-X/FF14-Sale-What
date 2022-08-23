@@ -1,16 +1,17 @@
-interface ListItem {
+export interface ListItem {
   value: string | number;
   label: string;
 }
-interface OptionsGroup {
+export interface OptionsGroup {
   label: string;
   options: ListItem[];
 }
 
-interface checkListItem {
+export interface checkListItem {
   label: string;
   data: ListItem[];
 }
+
 
 export const World: OptionsGroup[] = [
   {
