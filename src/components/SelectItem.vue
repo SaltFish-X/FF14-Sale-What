@@ -36,9 +36,9 @@
 
     <el-col :span="12">
       <el-radio-group v-model="beforeDay" @change="check">
-        <el-radio-button :label="0">今天</el-radio-button>
-        <el-radio-button :label="1">昨天</el-radio-button>
-        <el-radio-button :label="3">三天内</el-radio-button>
+        <el-radio-button :label="1">24小时内</el-radio-button>
+        <el-radio-button :label="2">48小时内</el-radio-button>
+        <el-radio-button :label="3">72小时内</el-radio-button>
         <el-radio-button :label="7">七天内</el-radio-button>
         <el-radio-button :label="30">一个月内</el-radio-button>
       </el-radio-group>
@@ -76,8 +76,8 @@
     style="width: 100%"
     :default-sort="{ prop: 'totalPrice', order: 'descending' }"
   >
-    <el-table-column prop="name" label="名称" width="180" sortable />
-    <el-table-column prop="newPrice" label="最近成交价" />
+    <el-table-column prop="name" label="名称" width="180" />
+    <el-table-column prop="newPrice" label="最近成交价" sortable />
     <el-table-column prop="total" label="交易量" sortable />
     <el-table-column prop="totalPrice" label="总价" sortable />
     <el-table-column prop="average" label="均价" />
@@ -117,7 +117,7 @@ const worldOptions = ref<OptionsGroup[]>(World);
 const list = ref<ListItem[]>([]);
 const options = ref<ListItem[]>([]);
 const loading = ref(false);
-const beforeDay = ref<number>(3);
+const beforeDay = ref<number>(1);
 
 const listKey = ref<string>('');
 const checkLists = ref<checkListItem[]>([]);
@@ -158,37 +158,36 @@ const check = () => {
   checkResult.value = [];
 
   value.value.forEach((itemId) => {
-    getSaleHistory(
-      world.value,
-      itemId.value,
-      passSeconds(beforeDay.value)
-    ).then((res) => {
-      const name = list.value.find((e) => e.value === itemId.value);
-      const saleList = res.data.entries || [];
-      const total = saleList?.reduce((a, b) => a + b.quantity, 0) || 0;
-      const totalPrice =
-        saleList?.reduce((a, b) => a + b.pricePerUnit * b.quantity, 0) || 0;
-      const average = total === 0 ? 0 : Number((totalPrice / total).toFixed(2));
-      const maxPrice =
-        saleList?.reduce(
-          (a, b) => Math.max(a, b.pricePerUnit),
-          saleList[0].pricePerUnit
-        ) || 0;
-      const minPrice =
-        saleList?.reduce(
-          (a, b) => Math.min(a, b.pricePerUnit),
-          saleList[0].pricePerUnit
-        ) || 0;
-      checkResult.value.push({
-        name: name?.label,
-        total,
-        average,
-        totalPrice,
-        newPrice: saleList[0] ? saleList[0].pricePerUnit : 0,
-        maxPrice,
-        minPrice,
-      });
-    });
+    getSaleHistory(world.value, itemId.value, beforeDay.value * 3600 * 24).then(
+      (res) => {
+        const name = list.value.find((e) => e.value === itemId.value);
+        const saleList = res.data.entries || [];
+        const total = saleList?.reduce((a, b) => a + b.quantity, 0) || 0;
+        const totalPrice =
+          saleList?.reduce((a, b) => a + b.pricePerUnit * b.quantity, 0) || 0;
+        const average =
+          total === 0 ? 0 : Number((totalPrice / total).toFixed(2));
+        const maxPrice =
+          saleList?.reduce(
+            (a, b) => Math.max(a, b.pricePerUnit),
+            saleList[0].pricePerUnit
+          ) || 0;
+        const minPrice =
+          saleList?.reduce(
+            (a, b) => Math.min(a, b.pricePerUnit),
+            saleList[0].pricePerUnit
+          ) || 0;
+        checkResult.value.push({
+          name: name?.label,
+          total,
+          average,
+          totalPrice,
+          newPrice: saleList[0] ? saleList[0].pricePerUnit : 0,
+          maxPrice,
+          minPrice,
+        });
+      }
+    );
   });
 
   checkResult.value.sort((a, b) => a.totalPrice - b.totalPrice);
