@@ -1,25 +1,21 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="4">
-      <el-select v-model="world" placeholder="Select" @change="check">
-        <el-option-group
-          v-for="group in worldOptions"
-          :key="group.label"
-          :label="group.label"
-        >
-          <el-option
-            v-for="item in group.options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.label"
-          />
-        </el-option-group> </el-select
-    ></el-col>
+      <el-cascader
+        v-model="world"
+        :value="world"
+        :options="worldOptions"
+        :show-all-levels="false"
+        expandTrigger="hover"
+        @change="check"
+        placeholder="请选择服务器"
+      />
+    </el-col>
 
     <el-col :span="4">
       <el-select
         v-model="listKey"
-        placeholder="请选择一个列表"
+        placeholder="请选择预设列表"
         @change="getCheckList"
       >
         <el-option
@@ -41,6 +37,8 @@
         <el-radio-button :label="3">72小时内</el-radio-button>
         <el-radio-button :label="7">七天内</el-radio-button>
         <el-radio-button :label="30">一个月内</el-radio-button>
+        <el-radio-button :label="180">半年内</el-radio-button>
+        <el-radio-button :label="365">一年内</el-radio-button>
       </el-radio-group>
     </el-col>
   </el-row>
@@ -89,7 +87,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
 import ItemData from '@/baseData/Item.json';
-import { World, checkList } from '@/baseData/Const.js';
+import { WorldAll, checkList } from '@/baseData/Const.js';
 import type {
   ListItem,
   OptionsGroup,
@@ -111,8 +109,8 @@ interface TableItem {
 }
 
 let value = ref<ListItem[]>([]);
-let world = ref('宇宙和音');
-const worldOptions = ref<OptionsGroup[]>(World);
+let world = ref<string[]>([]);
+const worldOptions = ref(WorldAll);
 
 const list = ref<ListItem[]>([]);
 const options = ref<ListItem[]>([]);
@@ -123,7 +121,7 @@ const listKey = ref<string>('');
 const checkLists = ref<checkListItem[]>([]);
 
 onMounted(() => {
-  world.value = window.localStorage.getItem('world') || '宇宙和音';
+  world.value = window.localStorage.getItem('world')?.split(',') || [];
   checkLists.value =
     JSON.parse(window.localStorage.getItem('checkLists') || '0') || checkList;
 
@@ -153,15 +151,20 @@ let checkResult = ref<TableItem[]>([]);
 
 const check = () => {
   window.localStorage.setItem('focuList', JSON.stringify(value.value));
-  window.localStorage.setItem('world', world.value);
+  window.localStorage.setItem('world', world.value.join(','));
 
   checkResult.value = [];
 
   value.value.forEach((itemId) => {
-    getSaleHistory(world.value, itemId.value, beforeDay.value * 3600 * 24).then(
-      (res) => {
-        const name = list.value.find((e) => e.value === itemId.value);
-        const saleList = res.data.entries || [];
+    getSaleHistory(
+      world.value[2],
+      itemId.value,
+      beforeDay.value * 3600 * 24
+    ).then((res) => {
+      const name = list.value.find((e) => e.value === itemId.value);
+      const saleList = res.data.entries || [];
+
+      if (saleList?.length > 0) {
         const total = saleList?.reduce((a, b) => a + b.quantity, 0) || 0;
         const totalPrice =
           saleList?.reduce((a, b) => a + b.pricePerUnit * b.quantity, 0) || 0;
@@ -177,6 +180,7 @@ const check = () => {
             (a, b) => Math.min(a, b.pricePerUnit),
             saleList[0].pricePerUnit
           ) || 0;
+
         checkResult.value.push({
           name: name?.label,
           total,
@@ -186,8 +190,18 @@ const check = () => {
           maxPrice,
           minPrice,
         });
+      } else {
+        checkResult.value.push({
+          name: name?.label,
+          total: 0,
+          average: 0,
+          totalPrice: 0,
+          newPrice: 0,
+          maxPrice: 0,
+          minPrice: 0,
+        });
       }
-    );
+    });
   });
 
   checkResult.value.sort((a, b) => a.totalPrice - b.totalPrice);
