@@ -1,3 +1,8 @@
+export interface HistorysView {
+  itemIDs: number[];
+  items: HistoryView[];
+  dcName: string;
+}
 export interface HistoryView {
   // The item ID.
   itemID: number; // int32

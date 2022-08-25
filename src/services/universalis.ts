@@ -2,14 +2,13 @@
 
 import http from '@/https';
 import type { YWZResponse } from '@/https';
-import type { HistoryView } from '@/interface';
-// { "id": 1173, "name": "宇宙和音" },
+import type { HistoryView, HistorysView } from '@/interface';
 
 export function getSaleHistory(
   worldDcRegion: string,
   itemIds: string | number,
   entriesWithin?: string | number
-):Promise<YWZResponse<HistoryView>> {
+): Promise<YWZResponse<HistoryView | HistorysView>> {
   return http({
     url: `history/${worldDcRegion}/${itemIds}`,
     params: { entriesWithin },
