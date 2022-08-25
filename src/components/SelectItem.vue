@@ -27,7 +27,15 @@
       </el-select>
     </el-col>
     <el-col :span="4">
-      <el-button type="primary" @click="createList">新建收藏列表</el-button>
+      <el-button-group class="ml-4">
+        <el-button type="primary" @click="createList">新建</el-button>
+        <el-button type="primary" @click="updateList" :disabled="listKey === ''"
+          >保存</el-button
+        >
+        <el-button type="primary" @click="deleteList" :disabled="listKey === ''"
+          >删除</el-button
+        >
+      </el-button-group>
     </el-col>
 
     <el-col :span="12">
@@ -74,13 +82,14 @@
     style="width: 100%"
     :default-sort="{ prop: 'totalPrice', order: 'descending' }"
   >
-    <el-table-column prop="name" label="名称" width="180" />
+    <el-table-column prop="name" label="名称" />
     <el-table-column prop="newPrice" label="最近成交价" sortable />
     <el-table-column prop="total" label="交易量" sortable />
     <el-table-column prop="totalPrice" label="总价" sortable />
     <el-table-column prop="average" label="均价" />
     <el-table-column prop="maxPrice" label="最高价" />
     <el-table-column prop="minPrice" label="最低价" />
+    <el-table-column prop="lastTime" label="最近交易时间" width="200" />
   </el-table>
 </template>
 
@@ -88,14 +97,10 @@
 import { onMounted, ref } from 'vue';
 import ItemData from '@/baseData/Item.json';
 import { WorldAll, checkList } from '@/baseData/Const.js';
-import type {
-  ListItem,
-  OptionsGroup,
-  checkListItem,
-} from '@/baseData/Const.js';
+import type { ListItem, checkListItem } from '@/baseData/Const.js';
 import { getSaleHistory } from '@/services/universalis';
-import { passSeconds } from '@/uitils/monent';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { formatUnixTime } from '@/uitils/monent';
 
 interface TableItem {
   name?: string;
@@ -106,6 +111,7 @@ interface TableItem {
   newPrice?: number;
   maxPrice?: number;
   minPrice?: number;
+  lastTime?: string;
 }
 
 let value = ref<ListItem[]>([]);
@@ -181,6 +187,8 @@ const check = () => {
             saleList[0].pricePerUnit
           ) || 0;
 
+        const lastTime = formatUnixTime(saleList[0].timestamp);
+
         checkResult.value.push({
           name: name?.label,
           total,
@@ -189,6 +197,7 @@ const check = () => {
           newPrice: saleList[0] ? saleList[0].pricePerUnit : 0,
           maxPrice,
           minPrice,
+          lastTime,
         });
       } else {
         checkResult.value.push({
@@ -221,7 +230,7 @@ const createList = () => {
     addList(value);
     ElMessage({
       type: 'success',
-      message: `创建新列表成功`,
+      message: `创建成功`,
     });
   });
 };
@@ -234,6 +243,27 @@ const addList = (label: string) => {
     ? checkLists.value.push(newData)
     : checkLists.value.splice(index, 1, newData);
   window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
+};
+
+const updateList = () => {
+  addList(listKey.value);
+  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
+
+  ElMessage({
+    type: 'success',
+    message: `保存成功`,
+  });
+};
+
+const deleteList = () => {
+  const index = checkLists.value.findIndex((e) => e.label === listKey.value);
+  checkLists.value.splice(index, 1);
+  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
+
+  ElMessage({
+    type: 'success',
+    message: `删除成功`,
+  });
 };
 </script>
 <style>
