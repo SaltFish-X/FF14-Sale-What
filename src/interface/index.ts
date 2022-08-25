@@ -2,6 +2,7 @@ export interface HistorysView {
   itemIDs: number[];
   items: HistoryView[];
   dcName: string;
+  unresolvedItems:number[]; // 没有查询到的参数
 }
 export interface HistoryView {
   // The item ID.
@@ -32,7 +33,7 @@ export interface HistoryView {
   worldName?: string;
 }
 
-interface MinimizedSaleView {
+export interface MinimizedSaleView {
   // Whether or not the item was high-quality.
   hq: boolean;
   // The price per unit sold.

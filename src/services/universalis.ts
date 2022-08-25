@@ -4,11 +4,22 @@ import http from '@/https';
 import type { YWZResponse } from '@/https';
 import type { HistoryView, HistorysView } from '@/interface';
 
-export function getSaleHistory(
+export function getSaleHistoryOne(
   worldDcRegion: string,
-  itemIds: string | number,
+  itemIds: string ,
   entriesWithin?: string | number
-): Promise<YWZResponse<HistoryView | HistorysView>> {
+): Promise<YWZResponse<HistoryView>> {
+  return http({
+    url: `history/${worldDcRegion}/${itemIds}`,
+    params: { entriesWithin },
+  });
+}
+
+export function getSaleHistorys(
+  worldDcRegion: string,
+  itemIds: string,
+  entriesWithin?: string | number
+): Promise<YWZResponse<HistorysView>> {
   return http({
     url: `history/${worldDcRegion}/${itemIds}`,
     params: { entriesWithin },
@@ -17,7 +28,7 @@ export function getSaleHistory(
 
 export function getSalecurrent(
   worldDcRegion: string,
-  itemIds: string | number,
+  itemIds: string,
   statsWithin?: string | number,
   entriesWithin?: string | number
 ) {

@@ -98,7 +98,9 @@ import { onMounted, ref } from 'vue';
 import ItemData from '@/baseData/Item.json';
 import { WorldAll, checkList } from '@/baseData/Const.js';
 import type { ListItem, checkListItem } from '@/baseData/Const.js';
-import { getSaleHistory } from '@/services/universalis';
+import type { MinimizedSaleView } from '@/interface';
+// import type { ListItem, checkListItem } from '@/baseData/Const.js';
+import { getSaleHistorys, getSaleHistoryOne } from '@/services/universalis';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { formatUnixTime } from '@/uitils/monent';
 import { searchItemByEnglish, searchItemByChina } from '@/services/xivapi';
@@ -176,60 +178,66 @@ const check = () => {
   window.localStorage.setItem('world', world.value.join(','));
 
   checkResult.value = [];
-
-  value.value.forEach((itemId) => {
-    getSaleHistory(
+  const itemIds = value.value.map((e) => e.value).join(',');
+  if (value.value.length > 1) {
+    getSaleHistorys(world.value[2], itemIds, beforeDay.value * 3600 * 24).then(
+      (res) => {
+        res.data.items.forEach((e, index) =>
+          historyDataFormat(e.entries || [], value.value[index].label)
+        );
+      }
+    );
+  } else {
+    getSaleHistoryOne(
       world.value[2],
-      itemId.value,
+      itemIds,
       beforeDay.value * 3600 * 24
     ).then((res) => {
-      const name = itemId.label;
-      const saleList = res.data.entries || [];
-
-      if (saleList?.length > 0) {
-        const total = saleList?.reduce((a, b) => a + b.quantity, 0) || 0;
-        const totalPrice =
-          saleList?.reduce((a, b) => a + b.pricePerUnit * b.quantity, 0) || 0;
-        const average =
-          total === 0 ? 0 : Number((totalPrice / total).toFixed(2));
-        const maxPrice =
-          saleList?.reduce(
-            (a, b) => Math.max(a, b.pricePerUnit),
-            saleList[0].pricePerUnit
-          ) || 0;
-        const minPrice =
-          saleList?.reduce(
-            (a, b) => Math.min(a, b.pricePerUnit),
-            saleList[0].pricePerUnit
-          ) || 0;
-
-        const lastTime = formatUnixTime(saleList[0].timestamp);
-
-        checkResult.value.push({
-          name,
-          total,
-          average,
-          totalPrice,
-          newPrice: saleList[0] ? saleList[0].pricePerUnit : 0,
-          maxPrice,
-          minPrice,
-          lastTime,
-        });
-      } else {
-        checkResult.value.push({
-          name: name,
-          total: 0,
-          average: 0,
-          totalPrice: 0,
-          newPrice: 0,
-          maxPrice: 0,
-          minPrice: 0,
-        });
-      }
+      historyDataFormat(res.data.entries || [], value.value[0].label);
     });
-  });
+  }
+};
 
-  checkResult.value.sort((a, b) => a.totalPrice - b.totalPrice);
+const historyDataFormat = (saleList: MinimizedSaleView[], name: string) => {
+  if (saleList?.length > 0) {
+    const total = saleList?.reduce((a, b) => a + b.quantity, 0) || 0;
+    const totalPrice =
+      saleList?.reduce((a, b) => a + b.pricePerUnit * b.quantity, 0) || 0;
+    const average = total === 0 ? 0 : Number((totalPrice / total).toFixed(2));
+    const maxPrice =
+      saleList?.reduce(
+        (a, b) => Math.max(a, b.pricePerUnit),
+        saleList[0].pricePerUnit
+      ) || 0;
+    const minPrice =
+      saleList?.reduce(
+        (a, b) => Math.min(a, b.pricePerUnit),
+        saleList[0].pricePerUnit
+      ) || 0;
+
+    const lastTime = formatUnixTime(saleList[0].timestamp);
+
+    checkResult.value.push({
+      name,
+      total,
+      average,
+      totalPrice,
+      newPrice: saleList[0] ? saleList[0].pricePerUnit : 0,
+      maxPrice,
+      minPrice,
+      lastTime,
+    });
+  } else {
+    checkResult.value.push({
+      name: name,
+      total: 0,
+      average: 0,
+      totalPrice: 0,
+      newPrice: 0,
+      maxPrice: 0,
+      minPrice: 0,
+    });
+  }
 };
 
 const getCheckList = (e: string) => {

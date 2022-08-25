@@ -13,6 +13,7 @@ export interface checkListItem {
 }
 
 
+
 // var a = []
 // world.forEach(e=>{
 //   const regionId = a.findIndex( ele => ele.label === e.region)
