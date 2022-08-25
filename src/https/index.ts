@@ -22,7 +22,10 @@ const request = new Request({
     requestInterceptors: (config) => config,
     // 响应拦截器
     responseInterceptors: (result: AxiosResponse) => {
-      result.data = { data: result.data, statusCode: result.status };
+      result.data = {
+        data: result.data,
+        statusCode: result.status,
+      };
       return result;
     },
   },

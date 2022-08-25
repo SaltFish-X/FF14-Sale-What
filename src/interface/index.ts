@@ -45,3 +45,21 @@ interface MinimizedSaleView {
   // The world ID, if applicable.
   worldID?: number; // int32
 }
+
+export interface XIVAPIItemView {
+  Pagination: {
+    Page: number;
+    Results: number;
+    ResultsPerPage: number;
+    ResultsTotal: number;
+  };
+
+  Results: XIVAPIItemResultView[];
+}
+export interface XIVAPIItemResultView {
+  ID: number;
+  Icon: string;
+  Name: string;
+  Url: string;
+  UrlType: string;
+}

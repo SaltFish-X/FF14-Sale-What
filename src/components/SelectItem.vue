@@ -101,6 +101,7 @@ import type { ListItem, checkListItem } from '@/baseData/Const.js';
 import { getSaleHistory } from '@/services/universalis';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { formatUnixTime } from '@/uitils/monent';
+import { searchItemByEnglish, searchItemByChina } from '@/services/xivapi';
 
 interface TableItem {
   name?: string;
@@ -142,12 +143,27 @@ onMounted(() => {
 const remoteMethod = (query: string) => {
   if (query) {
     loading.value = true;
-    setTimeout(() => {
-      loading.value = false;
-      options.value = list.value.filter((item) => {
-        return item.label.toLowerCase().includes(query.toLowerCase());
-      });
-    }, 200);
+    // [en,ch]
+    Promise.all([searchItemByEnglish(query), searchItemByChina(query)]).then(
+      (res) => {
+        loading.value = false;
+
+        const enData = res[0].data.Results.map((e) => {
+          return { label: e.Name, value: e.ID };
+        });
+
+        const chData = res[1].data.Results.map((e) => {
+          return { label: e.Name, value: e.ID };
+        });
+
+        enData.forEach((el) => {
+          const index = chData.findIndex((chEl) => chEl.value === el.value);
+          !~index ? chData.push(el) : 0;
+        });
+
+        options.value = chData;
+      }
+    );
   } else {
     options.value = [];
   }
@@ -167,7 +183,7 @@ const check = () => {
       itemId.value,
       beforeDay.value * 3600 * 24
     ).then((res) => {
-      const name = list.value.find((e) => e.value === itemId.value);
+      const name = itemId.label;
       const saleList = res.data.entries || [];
 
       if (saleList?.length > 0) {
@@ -190,7 +206,7 @@ const check = () => {
         const lastTime = formatUnixTime(saleList[0].timestamp);
 
         checkResult.value.push({
-          name: name?.label,
+          name,
           total,
           average,
           totalPrice,
@@ -201,7 +217,7 @@ const check = () => {
         });
       } else {
         checkResult.value.push({
-          name: name?.label,
+          name: name,
           total: 0,
           average: 0,
           totalPrice: 0,
