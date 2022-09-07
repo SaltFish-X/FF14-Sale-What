@@ -95,11 +95,9 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
-import ItemData from '@/baseData/Item.json';
 import { WorldAll, checkList } from '@/baseData/Const.js';
 import type { ListItem, checkListItem } from '@/baseData/Const.js';
 import type { MinimizedSaleView } from '@/interface';
-// import type { ListItem, checkListItem } from '@/baseData/Const.js';
 import { getSaleHistorys, getSaleHistoryOne } from '@/services/universalis';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { formatUnixTime } from '@/uitils/monent';
@@ -121,7 +119,6 @@ let value = ref<ListItem[]>([]);
 let world = ref<string[]>([]);
 const worldOptions = ref(WorldAll);
 
-const list = ref<ListItem[]>([]);
 const options = ref<ListItem[]>([]);
 const loading = ref(false);
 const beforeDay = ref<number>(1);
@@ -133,10 +130,6 @@ onMounted(() => {
   world.value = window.localStorage.getItem('world')?.split(',') || [];
   checkLists.value =
     JSON.parse(window.localStorage.getItem('checkLists') || '0') || checkList;
-
-  list.value = Object.entries(ItemData).map((item) => {
-    return { value: `${item[0]}`, label: `${item[1]}` };
-  });
 
   const focuList = JSON.parse(window.localStorage.getItem('focuList') || '[]');
   focuList.length > 0 ? (value.value = focuList) : null;
