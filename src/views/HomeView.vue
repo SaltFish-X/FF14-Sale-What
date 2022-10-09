@@ -1,10 +1,10 @@
 <template>
   <el-tabs v-model="activeName" type="border-card">
-    <el-tab-pane label="出售记录查询" name="first">
-      <SelectItem />
-    </el-tab-pane>
-    <el-tab-pane label="在售比价查询" name="second">
+    <el-tab-pane label="在售比价查询" name="first">
       <BuyItem />
+    </el-tab-pane>
+    <el-tab-pane label="出售记录查询" name="second" :lazy="true">
+      <SelectItem />
     </el-tab-pane>
   </el-tabs>
 </template>

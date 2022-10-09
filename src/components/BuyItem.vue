@@ -61,6 +61,7 @@
     </el-col>
     <el-col :span="4">
       <el-button type="primary" @click="check">查询</el-button>
+      <el-button @click="value = []">清空</el-button>
     </el-col>
   </el-row>
 
@@ -72,7 +73,8 @@
   >
     <el-table-column type="expand">
       <template #default="props">
-        <el-table :data="props.row.shortList">
+        <h2 class="table-detail-title">在售详情，仅显示前20条</h2>
+        <el-table :data="props.row.shortList" class="table-detail" border>
           <el-table-column type="index" />
           <el-table-column prop="name" label="名称" />
           <el-table-column prop="pricePerUnit" label="价格" />
@@ -82,11 +84,13 @@
           <!-- <el-table-column prop="lastReviewTime" label="上架时间" /> -->
           <el-table-column prop="worldUploadTimes" label="服务器更新时间" />
         </el-table>
+        <h5 class="table-detail-title">在售详情，当前为最后一条</h5>
       </template>
     </el-table-column>
     <el-table-column prop="name" label="名称" />
-    <el-table-column prop="minPrice" label="最低价格" />
-    <el-table-column prop="quantity" label="数量" />
+    <el-table-column prop="minPrice" label="最低价" width="80" />
+    <el-table-column prop="quantity" label="数量" width="80" />
+    <el-table-column prop="allPrice" label="总价" />
     <el-table-column prop="retainerName" label="雇员名" />
     <el-table-column prop="worldName" label="服务器" />
     <!-- <el-table-column prop="lastReviewTime" label="上架时间" /> -->
@@ -107,6 +111,7 @@ import { searchItemByEnglish, searchItemByChina } from '@/services/xivapi';
 interface TableItem {
   name?: string;
   minPrice?: number;
+  allPrice?: number;
   worldUploadTimes: string; // 服务器更新时间
   lastReviewTime?: string; // 上架时间
   worldName?: string;
@@ -200,6 +205,7 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
     return {
       ...e,
       name,
+      taxPrice: Math.ceil(e.pricePerUnit * 1.05),
       lastReviewTime: formatUnixTime(e.lastReviewTime),
       worldUploadTimes: getWorldUploadTimes(data.worldUploadTimes, e.worldID),
     };
@@ -210,18 +216,21 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
     list[0].worldID
   );
   const minPrice = list[0].pricePerUnit;
+  // const taxPrice = Math.ceil(minPrice * 1.05);
   const worldName = list[0].worldName;
   const quantity = list.reduce((a, b) =>
     minPrice === b.pricePerUnit && a.worldName === b.worldName
       ? { ...a, quantity: a.quantity + b.quantity }
       : a
   ).quantity;
+  const allPrice = quantity * minPrice;
   // list[0].quantity;
   const retainerName = list[0].retainerName;
   checkResult.value.push({
     name,
     lastReviewTime,
     minPrice,
+    allPrice,
     worldName,
     quantity,
     retainerName,
@@ -282,6 +291,7 @@ const deleteList = () => {
     'checkLists-buy',
     JSON.stringify(checkLists.value)
   );
+  listKey.value = '';
 
   ElMessage({
     type: 'success',
@@ -292,5 +302,11 @@ const deleteList = () => {
 <style>
 .el-select {
   width: 100%;
+}
+
+.table-detail-title {
+  text-align: center;
+  margin: 4px;
+  color: red;
 }
 </style>

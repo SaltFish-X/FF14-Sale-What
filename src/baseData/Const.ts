@@ -693,7 +693,6 @@ export const World: OptionsGroup[] = [
 ];
 
 export const checkList: checkListItem[] = [
-  { label: '清空', data: [] },
   {
     label: '礼服列表',
     data: [
@@ -913,10 +912,6 @@ export const checkList: checkListItem[] = [
 ];
 
 export const checkListBuy: checkListItem[] = [
-    {
-        "label": "清空",
-        "data": []
-    },
     {
         "label": "礼服材料",
         "data": [

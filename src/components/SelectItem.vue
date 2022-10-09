@@ -73,6 +73,7 @@
     </el-col>
     <el-col :span="4">
       <el-button type="primary" @click="check">查询</el-button>
+      <el-button @click="value = []">清空</el-button>
     </el-col>
   </el-row>
 
@@ -82,7 +83,7 @@
     style="width: 100%"
     :default-sort="{ prop: 'totalPrice', order: 'descending' }"
   >
-    <el-table-column prop="name" label="名称" />
+    <el-table-column prop="name" label="名称" min-width="100" />
     <el-table-column prop="newPrice" label="最近成交价" sortable />
     <el-table-column prop="total" label="交易量" sortable />
     <el-table-column prop="totalPrice" label="总价" sortable />
@@ -276,6 +277,7 @@ const deleteList = () => {
   const index = checkLists.value.findIndex((e) => e.label === listKey.value);
   checkLists.value.splice(index, 1);
   window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
+  listKey.value = '';
 
   ElMessage({
     type: 'success',
