@@ -132,7 +132,9 @@ const listKey = ref<string>('');
 const checkLists = ref<checkListItem[]>([]);
 
 onMounted(() => {
-  world.value = window.localStorage.getItem('world-buy')?.split(',') || [];
+  world.value =
+    window.localStorage.getItem('world-buy')?.split(',') ||
+    '中国,陆行鸟,陆行鸟'.split(',');
   checkLists.value =
     JSON.parse(window.localStorage.getItem('checkLists-buy') || '0') ||
     checkListBuy;
