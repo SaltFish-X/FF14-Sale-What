@@ -27,7 +27,7 @@
       </el-select>
     </el-col>
     <el-col :span="4">
-      <el-button-group class="ml-4">
+      <el-button-group>
         <el-button type="primary" @click="createList">新建</el-button>
         <el-button type="primary" @click="updateList" :disabled="listKey === ''"
           >保存</el-button
@@ -129,7 +129,8 @@ const checkLists = ref<checkListItem[]>([]);
 
 onMounted(() => {
   world.value =
-    window.localStorage.getItem('world')?.split(',') || '中国,陆行鸟,1173';
+    window.localStorage.getItem('world')?.split(',') ||
+    '中国,陆行鸟,1173'.split(',');
   checkLists.value =
     JSON.parse(window.localStorage.getItem('checkLists') || '0') || checkList;
 

@@ -27,7 +27,7 @@
       </el-select>
     </el-col>
     <el-col :span="4">
-      <el-button-group class="ml-4">
+      <el-button-group>
         <el-button type="primary" @click="createList">新建</el-button>
         <el-button type="primary" @click="updateList" :disabled="listKey === ''"
           >保存</el-button
@@ -87,14 +87,33 @@
         <h5 class="table-detail-title">在售详情，当前为最后一条</h5>
       </template>
     </el-table-column>
-    <el-table-column prop="name" label="名称" />
+    <el-table-column prop="name" label="名称" min-width="200" />
     <el-table-column prop="minPrice" label="最低价" width="80" />
-    <el-table-column prop="quantity" label="数量" width="80" />
+    <el-table-column
+      prop="quantity"
+      label="数量"
+      width="80"
+      label-class-name="table-header-tips"
+    >
+      <template #header>
+        数量
+        <el-tooltip
+          effect="dark"
+          content="同服务器同价格不同雇员的总数"
+          placement="top"
+          ><el-icon class="ml-4"><InfoFilled /></el-icon>
+        </el-tooltip>
+      </template>
+    </el-table-column>
     <el-table-column prop="allPrice" label="总价" />
-    <el-table-column prop="retainerName" label="雇员名" />
-    <el-table-column prop="worldName" label="服务器" />
+    <el-table-column prop="retainerName" label="雇员名" width="200" />
+    <el-table-column prop="worldName" label="服务器" width="180" />
     <!-- <el-table-column prop="lastReviewTime" label="上架时间" /> -->
-    <el-table-column prop="worldUploadTimes" label="服务器更新时间" />
+    <el-table-column
+      prop="worldUploadTimes"
+      label="服务器更新时间"
+      width="180"
+    />
   </el-table>
 </template>
 
@@ -107,7 +126,7 @@ import { getSalecurrent, getSalecurrentOne } from '@/services/universalis';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { formatUnixTime } from '@/uitils/monent';
 import { searchItemByEnglish, searchItemByChina } from '@/services/xivapi';
-
+import { InfoFilled } from '@element-plus/icons-vue';
 interface TableItem {
   name?: string;
   minPrice?: number;
@@ -197,9 +216,17 @@ const check = () => {
   }
 };
 
-const getWorldUploadTimes = (worldList?: Object, worldId?: number) =>
-  // @ts-ignore
-  formatUnixTime(worldList[worldId] / 1000);
+const getWorldUploadTimes = (
+  worldList?: Object,
+  worldId?: number,
+  oneWorldTime?: number
+) =>
+  worldList
+    ? // @ts-ignore
+      formatUnixTime(worldList[worldId!] / 1000)
+    : oneWorldTime
+    ? formatUnixTime(oneWorldTime / 1000)
+    : '-';
 
 const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
   const list = data.listings || [];
@@ -209,17 +236,23 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
       name,
       taxPrice: Math.ceil(e.pricePerUnit * 1.05),
       lastReviewTime: formatUnixTime(e.lastReviewTime),
-      worldUploadTimes: getWorldUploadTimes(data.worldUploadTimes, e.worldID),
+      worldUploadTimes: getWorldUploadTimes(
+        data.worldUploadTimes,
+        e.worldID,
+        data.lastUploadTime
+      ),
+      worldName: e.worldName || data.worldName,
     };
   });
   const lastReviewTime = formatUnixTime(list[0].lastReviewTime);
   const worldUploadTimes = getWorldUploadTimes(
     data.worldUploadTimes,
-    list[0].worldID
+    list[0].worldID,
+    data.lastUploadTime
   );
   const minPrice = list[0].pricePerUnit;
   // const taxPrice = Math.ceil(minPrice * 1.05);
-  const worldName = list[0].worldName;
+  const worldName = list[0].worldName || data.worldName;
   const quantity = list.reduce((a, b) =>
     minPrice === b.pricePerUnit && a.worldName === b.worldName
       ? { ...a, quantity: a.quantity + b.quantity }
@@ -310,5 +343,11 @@ const deleteList = () => {
   text-align: center;
   margin: 4px;
   color: red;
+}
+
+.table-header-tips {
+  display: flex;
+  align-items: center;
+  /* vertical-align: text-top; */
 }
 </style>
