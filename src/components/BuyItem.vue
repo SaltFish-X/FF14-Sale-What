@@ -65,15 +65,10 @@
     </el-col>
   </el-row>
 
-  <el-table
-    :data="checkResult"
-    border
-    style="width: 100%"
-    :default-sort="{ prop: 'totalPrice', order: 'descending' }"
-  >
+  <el-table :data="checkResult" border style="width: 100%">
     <el-table-column type="expand">
       <template #default="props">
-        <h2 class="table-detail-title">在售详情，仅显示前20条</h2>
+        <h4 class="table-detail-title">在售详情，仅显示前20条</h4>
         <el-table :data="props.row.shortList" class="table-detail" border>
           <el-table-column type="index" />
           <el-table-column prop="name" label="名称" />
@@ -84,7 +79,7 @@
           <!-- <el-table-column prop="lastReviewTime" label="上架时间" /> -->
           <el-table-column prop="worldUploadTimes" label="服务器更新时间" />
         </el-table>
-        <h5 class="table-detail-title">在售详情，当前为最后一条</h5>
+        <h4 class="table-detail-title">在售详情，当前为最后一条</h4>
       </template>
     </el-table-column>
     <el-table-column prop="name" label="名称" min-width="200" />
@@ -97,10 +92,7 @@
     >
       <template #header>
         数量
-        <el-tooltip
-          effect="dark"
-          content="同服务器同价格不同雇员的总数"
-          placement="top"
+        <el-tooltip effect="dark" content="同服务器同价格的总计" placement="top"
           ><el-icon class="ml-4"><InfoFilled /></el-icon>
         </el-tooltip>
       </template>
@@ -128,6 +120,7 @@ import { formatUnixTime } from '@/uitils/monent';
 import { searchItemByEnglish, searchItemByChina } from '@/services/xivapi';
 import { InfoFilled } from '@element-plus/icons-vue';
 interface TableItem {
+  itemID?: number;
   name?: string;
   minPrice?: number;
   allPrice?: number;
@@ -229,6 +222,7 @@ const getWorldUploadTimes = (
     : '-';
 
 const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
+  const itemID = data.itemID;
   const list = data.listings || [];
   const shortList = list.slice(0, 20).map((e) => {
     return {
@@ -244,6 +238,7 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
       worldName: e.worldName || data.worldName,
     };
   });
+
   const lastReviewTime = formatUnixTime(list[0].lastReviewTime);
   const worldUploadTimes = getWorldUploadTimes(
     data.worldUploadTimes,
@@ -261,7 +256,9 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
   const allPrice = quantity * minPrice;
   // list[0].quantity;
   const retainerName = list[0].retainerName;
+
   checkResult.value.push({
+    itemID,
     name,
     lastReviewTime,
     minPrice,
@@ -272,6 +269,8 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
     shortList,
     worldUploadTimes,
   });
+
+  checkResult.value.sort((a, b) => a.itemID! - b.itemID!);
 };
 
 const getCheckList = (e: string) => {
@@ -339,6 +338,11 @@ const deleteList = () => {
   width: 100%;
 }
 
+.table-detail {
+  width: 96%;
+  margin: auto;
+}
+
 .table-detail-title {
   text-align: center;
   margin: 4px;
@@ -348,6 +352,5 @@ const deleteList = () => {
 .table-header-tips {
   display: flex;
   align-items: center;
-  /* vertical-align: text-top; */
 }
 </style>

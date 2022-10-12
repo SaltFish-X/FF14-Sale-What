@@ -912,73 +912,63 @@ export const checkList: checkListItem[] = [
 ];
 
 export const checkListBuy: checkListItem[] = [
-    {
-        "label": "礼服材料",
-        "data": [
-            {
-                "label": "山鸡革",
-                "value": 36248
-            },
-            {
-                "label": "紫黄晶",
-                "value": 36182
-            },
-            {
-                "label": "辉翠银附魔墨水",
-                "value": 36237
-            },
-            {
-                "label": "伽迦象革",
-                "value": 36247
-            },
-            {
-                "label": "赛加羚羊革",
-                "value": 36249
-            },
-            {
-                "label": "铋金锭",
-                "value": 36170
-            },
-            {
-                "label": "辉翠银锭",
-                "value": 36169
-            }
-        ]
-    },{
-    "label": "590材料",
-    "data": [
+  {
+    label: '礼服材料',
+    data: [
       {
-          "value": "37280",
-          "label": "艾布拉纳赛黄晶"
+        label: '辉翠银附魔墨水',
+        value: 36237,
+      },
+
+      {
+        label: '伽迦象革',
+        value: 36247,
       },
       {
-          "value": "37281",
-          "label": "萨维奈纤维"
+        label: '山鸡革',
+        value: 36248,
       },
       {
-          "value": "36223",
-          "label": "晓月灵砂"
+        label: '辉翠银锭',
+        value: 36169,
+      },
+    ],
+  },
+  {
+    label: '590材料',
+    data: [
+      {
+        value: '37280',
+        label: '艾布拉纳赛黄晶',
       },
       {
-          "label": "艾布拉纳赛黄晶原石",
-          "value": 37279
+        value: '37281',
+        label: '萨维奈纤维',
       },
       {
-          "label": "萨维奈玉米",
-          "value": 37278
+        value: '36223',
+        label: '晓月灵砂',
       },
       {
-          "label": "黄金丝绸",
-          "value": 36213
+        label: '艾布拉纳赛黄晶原石',
+        value: 37279,
       },
       {
-          "label": "月精金锭",
-          "value": 36173
+        label: '萨维奈玉米',
+        value: 37278,
       },
       {
-          "label": "两栖犀革",
-          "value": 36252
-      }
-  ]
-}
-]
+        label: '黄金丝绸',
+        value: 36213,
+      },
+      {
+        label: '月精金锭',
+        value: 36173,
+      },
+      {
+        label: '两栖犀革',
+        value: 36252,
+      },
+    ],
+  },
+];
