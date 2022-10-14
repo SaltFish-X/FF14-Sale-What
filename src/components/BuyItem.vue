@@ -254,7 +254,6 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
       : a
   ).quantity;
   const allPrice = quantity * minPrice;
-  // list[0].quantity;
   const retainerName = list[0].retainerName;
 
   checkResult.value.push({
