@@ -81,6 +81,7 @@
     :data="checkResult"
     border
     style="width: 100%"
+    v-loading="checkLoading"
     :default-sort="{ prop: 'totalPrice', order: 'descending' }"
   >
     <el-table-column prop="name" label="名称" min-width="100" />
@@ -122,6 +123,7 @@ const worldOptions = ref(WorldAll);
 
 const options = ref<ListItem[]>([]);
 const loading = ref(false);
+const checkLoading = ref(false);
 const beforeDay = ref<number>(1);
 
 const listKey = ref<string>('');
@@ -136,6 +138,7 @@ onMounted(() => {
 
   const focuList = JSON.parse(window.localStorage.getItem('focuList') || '[]');
   focuList.length > 0 ? (value.value = focuList) : null;
+  check();
 });
 
 const remoteMethod = (query: string) => {
@@ -174,6 +177,7 @@ const check = () => {
   window.localStorage.setItem('world', world.value.join(','));
 
   checkResult.value = [];
+  checkLoading.value = true;
   const itemIds = value.value.map((e) => e.value).join(',');
   if (value.value.length > 1) {
     getSaleHistorys(world.value[2], itemIds, beforeDay.value * 3600 * 24).then(
@@ -181,6 +185,7 @@ const check = () => {
         res.data.items.forEach((e, index) =>
           historyDataFormat(e.entries || [], value.value[index].label)
         );
+        checkLoading.value = false;
       }
     );
   } else {
@@ -190,6 +195,7 @@ const check = () => {
       beforeDay.value * 3600 * 24
     ).then((res) => {
       historyDataFormat(res.data.entries || [], value.value[0].label);
+      checkLoading.value = false;
     });
   }
 };

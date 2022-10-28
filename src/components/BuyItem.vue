@@ -65,7 +65,12 @@
     </el-col>
   </el-row>
 
-  <el-table :data="checkResult" border style="width: 100%">
+  <el-table
+    :data="checkResult"
+    border
+    style="width: 100%"
+    v-loading="checkLoading"
+  >
     <el-table-column type="expand">
       <template #default="props">
         <h4 class="table-detail-title">在售详情，仅显示前20条</h4>
@@ -83,7 +88,7 @@
       </template>
     </el-table-column>
     <el-table-column prop="name" label="名称" min-width="200" />
-    <el-table-column prop="minPrice" label="最低价" width="80" />
+    <el-table-column prop="minPrice" label="最低价" min-width="80" />
     <el-table-column
       prop="quantity"
       label="数量"
@@ -111,7 +116,7 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
-import { WorldAll, checkListBuy } from '@/baseData/Const.js';
+import { WorldAll, checkList } from '@/baseData/Const.js';
 import type { ListItem, checkListItem } from '@/baseData/Const.js';
 import type { CurrentlyShownView, ListingView } from '@/interface';
 import { getSalecurrent, getSalecurrentOne } from '@/services/universalis';
@@ -138,6 +143,7 @@ const worldOptions = ref(WorldAll);
 
 const options = ref<ListItem[]>([]);
 const loading = ref(false);
+const checkLoading = ref(false);
 const beforeDay = ref<number>(1);
 
 const listKey = ref<string>('');
@@ -148,13 +154,14 @@ onMounted(() => {
     window.localStorage.getItem('world-buy')?.split(',') ||
     '中国,陆行鸟,陆行鸟'.split(',');
   checkLists.value =
-    JSON.parse(window.localStorage.getItem('checkLists-buy') || '0') ||
-    checkListBuy;
+    JSON.parse(window.localStorage.getItem('checkLists') || '0') || checkList;
 
   const focuList = JSON.parse(
     window.localStorage.getItem('focuList-buy') || '[]'
   );
   focuList.length > 0 ? (value.value = focuList) : null;
+
+  check();
 });
 
 const remoteMethod = (query: string) => {
@@ -193,6 +200,7 @@ const check = () => {
   window.localStorage.setItem('world-buy', world.value.join(','));
 
   checkResult.value = [];
+  checkLoading.value = true;
   const itemIds = value.value.map((e) => e.value).join(',');
   if (value.value.length > 1) {
     getSalecurrent(world.value[2], itemIds).then((res) => {
@@ -201,11 +209,13 @@ const check = () => {
           saleCurrentFormat(view, value.value[index].label);
         });
       }
+      checkLoading.value = false;
     });
   } else {
     getSalecurrentOne(world.value[2], itemIds).then((res) => {
       saleCurrentFormat(res.data || [], value.value[0].label);
     });
+    checkLoading.value = false;
   }
 };
 
@@ -298,18 +308,12 @@ const addList = (label: string) => {
   !~index
     ? checkLists.value.push(newData)
     : checkLists.value.splice(index, 1, newData);
-  window.localStorage.setItem(
-    'checkLists-buy',
-    JSON.stringify(checkLists.value)
-  );
+  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
 };
 
 const updateList = () => {
   addList(listKey.value);
-  window.localStorage.setItem(
-    'checkLists-buy',
-    JSON.stringify(checkLists.value)
-  );
+  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
 
   ElMessage({
     type: 'success',
@@ -320,10 +324,7 @@ const updateList = () => {
 const deleteList = () => {
   const index = checkLists.value.findIndex((e) => e.label === listKey.value);
   checkLists.value.splice(index, 1);
-  window.localStorage.setItem(
-    'checkLists-buy',
-    JSON.stringify(checkLists.value)
-  );
+  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
   listKey.value = '';
 
   ElMessage({
