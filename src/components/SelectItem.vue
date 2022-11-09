@@ -84,6 +84,20 @@
     v-loading="checkLoading"
     :default-sort="{ prop: 'totalPrice', order: 'descending' }"
   >
+    <el-table-column type="expand">
+      <template #default="props">
+        <el-table :data="props.row.saleList" class="table-detail" border>
+          <el-table-column prop="pricePerUnit" label="价格" />
+          <el-table-column prop="quantity" label="数量" />
+          <el-table-column prop="buyerName" label="购买人" />
+          <el-table-column
+            prop="timestamp"
+            label="最近交易时间"
+            :formatter="formatterDate"
+          />
+        </el-table>
+      </template>
+    </el-table-column>
     <el-table-column prop="name" label="名称" min-width="100" />
     <el-table-column prop="newPrice" label="最近成交价" sortable />
     <el-table-column prop="total" label="交易量" sortable />
@@ -104,6 +118,7 @@ import { getSaleHistorys, getSaleHistoryOne } from '@/services/universalis';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { formatUnixTime } from '@/uitils/monent';
 import { searchItemByEnglish, searchItemByChina } from '@/services/xivapi';
+import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-column/defaults';
 
 interface TableItem {
   name?: string;
@@ -115,6 +130,8 @@ interface TableItem {
   maxPrice?: number;
   minPrice?: number;
   lastTime?: string;
+  timestamp?: number;
+  saleList?: MinimizedSaleView[];
 }
 
 let value = ref<ListItem[]>([]);
@@ -199,6 +216,9 @@ const check = () => {
     });
   }
 };
+const formatterDate = (row: TableItem, column: TableColumnCtx<TableItem>) => {
+  return formatUnixTime(row.timestamp || 0);
+};
 
 const historyDataFormat = (saleList: MinimizedSaleView[], name: string) => {
   if (saleList?.length > 0) {
@@ -218,7 +238,6 @@ const historyDataFormat = (saleList: MinimizedSaleView[], name: string) => {
       ) || 0;
 
     const lastTime = formatUnixTime(saleList[0].timestamp);
-
     checkResult.value.push({
       name,
       total,
@@ -228,6 +247,7 @@ const historyDataFormat = (saleList: MinimizedSaleView[], name: string) => {
       maxPrice,
       minPrice,
       lastTime,
+      saleList: saleList.slice(0, 20),
     });
   } else {
     checkResult.value.push({
