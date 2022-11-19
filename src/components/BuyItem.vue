@@ -27,6 +27,11 @@
       </el-select>
     </el-col>
     <el-col :span="4">
+      <el-switch v-model="isHq" active-value="true" inactive-value="false" />
+    </el-col>
+
+    <!-- true -->
+    <el-col :span="4">
       <el-button-group>
         <el-button type="primary" @click="createList">新建</el-button>
         <el-button type="primary" @click="updateList" :disabled="listKey === ''"
@@ -115,109 +120,110 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
-import { WorldAll, checkList } from '@/baseData/Const.js';
-import type { ListItem, checkListItem } from '@/baseData/Const.js';
-import type { CurrentlyShownView, ListingView } from '@/interface';
-import { getSalecurrent, getSalecurrentOne } from '@/services/universalis';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { formatUnixTime } from '@/uitils/monent';
-import { searchItemByEnglish, searchItemByChina } from '@/services/xivapi';
-import { InfoFilled } from '@element-plus/icons-vue';
+import { onMounted, ref } from 'vue'
+import { WorldAll, checkList } from '@/baseData/Const.js'
+import type { ListItem, checkListItem } from '@/baseData/Const.js'
+import type { CurrentlyShownView, ListingView } from '@/interface'
+import { getSalecurrent, getSalecurrentOne } from '@/services/universalis'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { formatUnixTime } from '@/uitils/monent'
+import { searchItemByEnglish, searchItemByChina } from '@/services/xivapi'
+import { InfoFilled } from '@element-plus/icons-vue'
 interface TableItem {
-  itemID?: number;
-  name?: string;
-  minPrice?: number;
-  allPrice?: number;
-  worldUploadTimes: string; // 服务器更新时间
-  lastReviewTime?: string; // 上架时间
-  worldName?: string;
-  quantity?: number;
-  retainerName?: string;
-  shortList?: TableItem[];
+  itemID?: number
+  name?: string
+  minPrice?: number
+  allPrice?: number
+  worldUploadTimes: string // 服务器更新时间
+  lastReviewTime?: string // 上架时间
+  worldName?: string
+  quantity?: number
+  retainerName?: string
+  shortList?: TableItem[]
 }
 
-let value = ref<ListItem[]>([]);
-let world = ref<string[]>([]);
-const worldOptions = ref(WorldAll);
+let value = ref<ListItem[]>([])
+let world = ref<string[]>([])
+let isHq = ref<string>('false')
+const worldOptions = ref(WorldAll)
 
-const options = ref<ListItem[]>([]);
-const loading = ref(false);
-const checkLoading = ref(false);
-const beforeDay = ref<number>(1);
+const options = ref<ListItem[]>([])
+const loading = ref(false)
+const checkLoading = ref(false)
+const beforeDay = ref<number>(1)
 
-const listKey = ref<string>('');
-const checkLists = ref<checkListItem[]>([]);
+const listKey = ref<string>('')
+const checkLists = ref<checkListItem[]>([])
 
 onMounted(() => {
   world.value =
     window.localStorage.getItem('world-buy')?.split(',') ||
-    '中国,陆行鸟,陆行鸟'.split(',');
+    '中国,陆行鸟,陆行鸟'.split(',')
   checkLists.value =
-    JSON.parse(window.localStorage.getItem('checkLists') || '0') || checkList;
+    JSON.parse(window.localStorage.getItem('checkLists') || '0') || checkList
 
   const focuList = JSON.parse(
     window.localStorage.getItem('focuList-buy') || '[]'
-  );
-  focuList.length > 0 ? (value.value = focuList) : null;
+  )
+  focuList.length > 0 ? (value.value = focuList) : null
 
-  check();
-});
+  check()
+})
 
 const remoteMethod = (query: string) => {
   if (query) {
-    loading.value = true;
+    loading.value = true
     // [en,ch]
     Promise.all([searchItemByEnglish(query), searchItemByChina(query)]).then(
       (res) => {
-        loading.value = false;
+        loading.value = false
 
         const enData = res[0].data.Results.map((e) => {
-          return { label: e.Name, value: e.ID };
-        });
+          return { label: e.Name, value: e.ID }
+        })
 
         const chData = res[1].data.Results.map((e) => {
-          return { label: e.Name, value: e.ID };
-        });
+          return { label: e.Name, value: e.ID }
+        })
 
         enData.forEach((el) => {
-          const index = chData.findIndex((chEl) => chEl.value === el.value);
-          !~index ? chData.push(el) : 0;
-        });
+          const index = chData.findIndex((chEl) => chEl.value === el.value)
+          !~index ? chData.push(el) : 0
+        })
 
-        options.value = chData;
+        options.value = chData
       }
-    );
+    )
   } else {
-    options.value = [];
+    options.value = []
   }
-};
+}
 
-let checkResult = ref<TableItem[]>([]);
+let checkResult = ref<TableItem[]>([])
 
 const check = () => {
-  window.localStorage.setItem('focuList-buy', JSON.stringify(value.value));
-  window.localStorage.setItem('world-buy', world.value.join(','));
+  window.localStorage.setItem('focuList-buy', JSON.stringify(value.value))
+  window.localStorage.setItem('world-buy', world.value.join(','))
 
-  checkResult.value = [];
-  checkLoading.value = true;
-  const itemIds = value.value.map((e) => e.value).join(',');
+  checkResult.value = []
+  checkLoading.value = true
+  const itemIds = value.value.map((e) => e.value).join(',')
   if (value.value.length > 1) {
-    getSalecurrent(world.value[2], itemIds).then((res) => {
+    getSalecurrent(world.value[2], itemIds, isHq.value).then((res) => {
       if (res.data.items) {
         Object.entries(res.data.items).forEach(([e, view], index) => {
-          saleCurrentFormat(view, value.value[index].label);
-        });
+          saleCurrentFormat(view, value.value[index].label)
+        })
       }
-      checkLoading.value = false;
-    });
+      checkLoading.value = false
+    })
   } else {
     getSalecurrentOne(world.value[2], itemIds).then((res) => {
-      saleCurrentFormat(res.data || [], value.value[0].label);
-    });
-    checkLoading.value = false;
+      saleCurrentFormat(res.data || [], value.value[0].label)
+    })
+    checkLoading.value = false
   }
-};
+}
 
 const getWorldUploadTimes = (
   worldList?: Object,
@@ -229,11 +235,11 @@ const getWorldUploadTimes = (
       formatUnixTime(worldList[worldId!] / 1000)
     : oneWorldTime
     ? formatUnixTime(oneWorldTime / 1000)
-    : '-';
+    : '-'
 
 const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
-  const itemID = data.itemID;
-  const list = data.listings || [];
+  const itemID = data.itemID
+  const list = data.listings || []
   const shortList = list.slice(0, 20).map((e) => {
     return {
       ...e,
@@ -246,25 +252,25 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
         data.lastUploadTime
       ),
       worldName: e.worldName || data.worldName,
-    };
-  });
+    }
+  })
 
-  const lastReviewTime = formatUnixTime(list[0].lastReviewTime);
+  const lastReviewTime = formatUnixTime(list[0].lastReviewTime)
   const worldUploadTimes = getWorldUploadTimes(
     data.worldUploadTimes,
     list[0].worldID,
     data.lastUploadTime
-  );
-  const minPrice = list[0].pricePerUnit;
+  )
+  const minPrice = list[0].pricePerUnit
   // const taxPrice = Math.ceil(minPrice * 1.05);
-  const worldName = list[0].worldName || data.worldName;
+  const worldName = list[0].worldName || data.worldName
   const quantity = list.reduce((a, b) =>
     minPrice === b.pricePerUnit && a.worldName === b.worldName
       ? { ...a, quantity: a.quantity + b.quantity }
       : a
-  ).quantity;
-  const allPrice = quantity * minPrice;
-  const retainerName = list[0].retainerName;
+  ).quantity
+  const allPrice = quantity * minPrice
+  const retainerName = list[0].retainerName
 
   checkResult.value.push({
     itemID,
@@ -277,61 +283,61 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
     retainerName,
     shortList,
     worldUploadTimes,
-  });
+  })
 
-  checkResult.value.sort((a, b) => a.itemID! - b.itemID!);
-};
+  checkResult.value.sort((a, b) => a.itemID! - b.itemID!)
+}
 
 const getCheckList = (e: string) => {
-  const data = checkLists.value.find((ele) => ele.label === e) || { data: [] };
-  value.value = data?.data;
-  check();
-};
+  const data = checkLists.value.find((ele) => ele.label === e) || { data: [] }
+  value.value = data?.data
+  check()
+}
 
 const createList = () => {
   ElMessageBox.prompt('请输入新的列表名', '创建新列表', {
     confirmButtonText: 'OK',
     cancelButtonText: 'Cancel',
   }).then(({ value }) => {
-    addList(value);
+    addList(value)
     ElMessage({
       type: 'success',
       message: `创建成功`,
-    });
-  });
-};
+    })
+  })
+}
 
 const addList = (label: string) => {
-  const index = checkLists.value.findIndex((e) => e.label === label);
-  const newData = { label, data: value.value };
+  const index = checkLists.value.findIndex((e) => e.label === label)
+  const newData = { label, data: value.value }
 
   !~index
     ? checkLists.value.push(newData)
-    : checkLists.value.splice(index, 1, newData);
-  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
-};
+    : checkLists.value.splice(index, 1, newData)
+  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value))
+}
 
 const updateList = () => {
-  addList(listKey.value);
-  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
+  addList(listKey.value)
+  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value))
 
   ElMessage({
     type: 'success',
     message: `保存成功`,
-  });
-};
+  })
+}
 
 const deleteList = () => {
-  const index = checkLists.value.findIndex((e) => e.label === listKey.value);
-  checkLists.value.splice(index, 1);
-  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value));
-  listKey.value = '';
+  const index = checkLists.value.findIndex((e) => e.label === listKey.value)
+  checkLists.value.splice(index, 1)
+  window.localStorage.setItem('checkLists', JSON.stringify(checkLists.value))
+  listKey.value = ''
 
   ElMessage({
     type: 'success',
     message: `删除成功`,
-  });
-};
+  })
+}
 </script>
 <style>
 .el-select {

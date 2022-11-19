@@ -1,18 +1,23 @@
 // https://docs.universalis.app
 
-import http from '@/https';
-import type { YWZResponse } from '@/https';
-import type { HistoryView, HistorysView,CurrentlyShownMultiViewV2,CurrentlyShownView } from '@/interface';
+import http from '@/https'
+import type { YWZResponse } from '@/https'
+import type {
+  HistoryView,
+  HistorysView,
+  CurrentlyShownMultiViewV2,
+  CurrentlyShownView,
+} from '@/interface'
 
 export function getSaleHistoryOne(
   worldDcRegion: string,
-  itemIds: string ,
+  itemIds: string,
   entriesWithin?: string | number
 ): Promise<YWZResponse<HistoryView>> {
   return http({
     url: `history/${worldDcRegion}/${itemIds}`,
     params: { entriesWithin },
-  });
+  })
 }
 
 export function getSaleHistorys(
@@ -23,21 +28,19 @@ export function getSaleHistorys(
   return http({
     url: `history/${worldDcRegion}/${itemIds}`,
     params: { entriesWithin },
-  });
+  })
 }
 
 export function getSalecurrent(
   worldDcRegion: string,
   itemIds: string,
-  statsWithin?: string | number,
-  entriesWithin?: string | number
+  hq?: string
 ): Promise<YWZResponse<CurrentlyShownMultiViewV2>> {
   return http({
     url: `${worldDcRegion}/${itemIds}`,
-    params: { statsWithin, entriesWithin },
-  });
+    params: { hq },
+  })
 }
-
 
 export function getSalecurrentOne(
   worldDcRegion: string,
@@ -48,5 +51,5 @@ export function getSalecurrentOne(
   return http({
     url: `${worldDcRegion}/${itemIds}`,
     params: { statsWithin, entriesWithin },
-  });
+  })
 }
