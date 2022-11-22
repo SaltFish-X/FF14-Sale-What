@@ -26,8 +26,13 @@
         />
       </el-select>
     </el-col>
-    <el-col :span="4">
-      <el-switch v-model="isHq" active-value="true" inactive-value="false" />
+    <el-col :span="2">
+      <el-switch
+        v-model="isHq"
+        active-value="true"
+        inactive-value="false"
+        active-text="仅查询hq"
+      />
     </el-col>
 
     <!-- true -->

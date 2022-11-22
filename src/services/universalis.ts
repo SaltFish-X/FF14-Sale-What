@@ -45,11 +45,10 @@ export function getSalecurrent(
 export function getSalecurrentOne(
   worldDcRegion: string,
   itemIds: string,
-  statsWithin?: string | number,
-  entriesWithin?: string | number
+  hq?: string
 ): Promise<YWZResponse<CurrentlyShownView>> {
   return http({
     url: `${worldDcRegion}/${itemIds}`,
-    params: { statsWithin, entriesWithin },
+    params: { hq },
   })
 }
