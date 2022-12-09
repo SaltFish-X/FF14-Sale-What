@@ -223,7 +223,7 @@ const check = () => {
       checkLoading.value = false
     })
   } else {
-    getSalecurrentOne(world.value[2], itemIds).then((res) => {
+    getSalecurrentOne(world.value[2], itemIds, isHq.value).then((res) => {
       saleCurrentFormat(res.data || [], value.value[0].label)
     })
     checkLoading.value = false
