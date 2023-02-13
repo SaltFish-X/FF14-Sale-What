@@ -259,36 +259,43 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
       worldName: e.worldName || data.worldName,
     }
   })
+  if (list[0]) {
+    const lastReviewTime = formatUnixTime(list[0].lastReviewTime)
+    const worldUploadTimes = getWorldUploadTimes(
+      data.worldUploadTimes,
+      list[0].worldID,
+      data.lastUploadTime
+    )
+    const minPrice = list[0].pricePerUnit
+    // const taxPrice = Math.ceil(minPrice * 1.05);
+    const worldName = list[0].worldName || data.worldName
+    const quantity = list.reduce((a, b) =>
+      minPrice === b.pricePerUnit && a.worldName === b.worldName
+        ? { ...a, quantity: a.quantity + b.quantity }
+        : a
+    ).quantity
+    const allPrice = quantity * minPrice
+    const retainerName = list[0].retainerName
 
-  const lastReviewTime = formatUnixTime(list[0].lastReviewTime)
-  const worldUploadTimes = getWorldUploadTimes(
-    data.worldUploadTimes,
-    list[0].worldID,
-    data.lastUploadTime
-  )
-  const minPrice = list[0].pricePerUnit
-  // const taxPrice = Math.ceil(minPrice * 1.05);
-  const worldName = list[0].worldName || data.worldName
-  const quantity = list.reduce((a, b) =>
-    minPrice === b.pricePerUnit && a.worldName === b.worldName
-      ? { ...a, quantity: a.quantity + b.quantity }
-      : a
-  ).quantity
-  const allPrice = quantity * minPrice
-  const retainerName = list[0].retainerName
-
-  checkResult.value.push({
-    itemID,
-    name,
-    lastReviewTime,
-    minPrice,
-    allPrice,
-    worldName,
-    quantity,
-    retainerName,
-    shortList,
-    worldUploadTimes,
-  })
+    checkResult.value.push({
+      itemID,
+      name,
+      lastReviewTime,
+      minPrice,
+      allPrice,
+      worldName,
+      quantity,
+      retainerName,
+      shortList,
+      worldUploadTimes,
+    })
+  } else {
+    checkResult.value.push({
+      itemID,
+      name,
+      worldUploadTimes: '-',
+    })
+  }
 
   checkResult.value.sort((a, b) => a.itemID! - b.itemID!)
 }
