@@ -152,9 +152,11 @@ onMounted(() => {
     window.localStorage.getItem('world')?.split(',') ||
     '中国,陆行鸟,1173'.split(',')
   checkLists.value =
-    JSON.parse(window.localStorage.getItem('checkLists') || '0') || checkList
+    JSON.parse(window.localStorage.getItem('checkLists') || '{}') || checkList
 
-  const focuList = JSON.parse(window.localStorage.getItem('focuList') || '[]')
+  listKey.value = window.localStorage.getItem('listKey') || ''
+
+  const focuList = JSON.parse(window.localStorage.getItem('focuList') || '{}')
   focuList.length > 0 ? (value.value = focuList) : null
   check()
 })
@@ -264,6 +266,8 @@ const historyDataFormat = (saleList: MinimizedSaleView[], name: string) => {
 }
 
 const getCheckList = (e: string) => {
+  window.localStorage.setItem('listKey', e)
+
   const data = checkLists.value.find((ele) => ele.label === e) || { data: [] }
   value.value = data?.data
   check()

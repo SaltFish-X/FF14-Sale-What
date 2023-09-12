@@ -165,11 +165,12 @@ onMounted(() => {
     window.localStorage.getItem('world-buy')?.split(',') ||
     '中国,陆行鸟,陆行鸟'.split(',')
   checkLists.value =
-    JSON.parse(window.localStorage.getItem('checkLists') || '0') || checkList
+    JSON.parse(window.localStorage.getItem('checkLists') || '{}') || checkList
 
-  const focuList = JSON.parse(
-    window.localStorage.getItem('focuList-buy') || '[]'
-  )
+  listKey.value = window.localStorage.getItem('listKey') || ''
+
+  const focuList = JSON.parse(window.localStorage.getItem('focuList') || '{}')
+
   focuList.length > 0 ? (value.value = focuList) : null
 
   check()
@@ -207,7 +208,7 @@ const remoteMethod = (query: string) => {
 let checkResult = ref<TableItem[]>([])
 
 const check = () => {
-  window.localStorage.setItem('focuList-buy', JSON.stringify(value.value))
+  window.localStorage.setItem('focuList', JSON.stringify(value.value))
   window.localStorage.setItem('world-buy', world.value.join(','))
 
   checkResult.value = []
@@ -301,6 +302,8 @@ const saleCurrentFormat = (data: CurrentlyShownView, name: string) => {
 }
 
 const getCheckList = (e: string) => {
+  window.localStorage.setItem('listKey', e)
+
   const data = checkLists.value.find((ele) => ele.label === e) || { data: [] }
   value.value = data?.data
   check()
